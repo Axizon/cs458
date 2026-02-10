@@ -74,7 +74,98 @@ void salsa20(uint8_t x[64]) {
         littleendianinverse(z[i], x + 4*i);
     }
 }
+void expand256(uint8_t k[32], uint8_t n[16], uint8_t state[64]) {
+    uint8_t a[] = {101, 120, 112, 97};
+    uint8_t b[] = {110, 100, 32, 51};
+    uint8_t c[] = {50, 45, 98, 121};
+    uint8_t d[] = {116, 101, 32, 107};
+    
+    for (int i = 0; i < 4; i++) {
+        state[i] = a[i];
+    }
+    for (int i = 0; i < 16; i++) {
+        state[4 + i] = k[i];
+    }
+    for (int i = 0; i < 4; i++) {
+        state[20 + i] = b[i];
+    }
+    for (int i = 0; i < 16; i++) {
+        state[24 + i] = n[i];
+    }
+    for (int i = 0; i < 4; i++) {
+        state[40 + i] = c[i];
+    }
+    for (int i = 0; i < 16; i++) {
+        state[44 + i] = k[16 + i];
+    }
+    for (int i = 0; i < 4; i++) {
+        state[60 + i] = d[i];
+    }
+}
 
+void expand128(uint8_t k[16], uint8_t n[16], uint8_t state[64]) {
+    uint8_t a[] = {101, 120, 112, 97};
+    uint8_t b[] = {110, 100, 32, 49};
+    uint8_t c[] = {54, 45, 98, 121};
+    uint8_t d[] = {116, 101, 32, 107};
+    
+    for (int i = 0; i < 4; i++) {
+        state[i] = a[i];
+    }
+    for (int i = 0; i < 16; i++) {
+        state[4 + i] = k[i];
+    }
+    for (int i = 0; i < 4; i++) {
+        state[20 + i] = b[i];
+    }
+    for (int i = 0; i < 16; i++) {
+        state[24 + i] = n[i];
+    }
+    for (int i = 0; i < 4; i++) {
+        state[40 + i] = c[i];
+    }
+    for (int i = 0; i < 16; i++) {
+        state[44 + i] = k[i];
+    }
+    for (int i = 0; i < 4; i++) {
+        state[60 + i] = d[i];
+    }
+}
+
+void expand64(uint8_t k[8], uint8_t n[16], uint8_t state[64]) {
+    uint8_t a[] = {101, 120, 112, 97};
+    uint8_t b[] = {110, 100, 32, 48};
+    uint8_t c[] = {56, 45, 98, 121};
+    uint8_t d[] = {116, 101, 32, 107};
+    
+    for (int i = 0; i < 4; i++) {
+        state[i] = a[i];
+    }
+    for (int i = 0; i < 8; i++) {
+        state[4 + i] = k[i];
+    }
+    for (int i = 0; i < 8; i++) {
+        state[12 + i] = k[i];
+    }
+    for (int i = 0; i < 4; i++) {
+        state[20 + i] = b[i];
+    }
+    for (int i = 0; i < 16; i++) {
+        state[24 + i] = n[i];
+    }
+    for (int i = 0; i < 4; i++) {
+        state[40 + i] = c[i];
+    }
+    for (int i = 0; i < 8; i++) {
+        state[44 + i] = k[i];
+    }
+    for (int i = 0; i < 8; i++) {
+        state[52 + i] = k[i];
+    }
+    for (int i = 0; i < 4; i++) {
+        state[60 + i] = d[i];
+    }
+}
 int main(int argc, char *argv[]) {
     return 0;
 }
