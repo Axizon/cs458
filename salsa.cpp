@@ -36,6 +36,11 @@ void columnround(uint32_t x[16]) {
     quarterround(x[15], x[3], x[7], x[11]);
 }
 
+void doubleround(uint32_t x[16]) {
+    columnround(x);
+    rowround(x);
+}
+
 int main(int argc, char *argv[]) {
     return 0;
 }
