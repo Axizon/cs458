@@ -41,6 +41,40 @@ void doubleround(uint32_t x[16]) {
     rowround(x);
 }
 
+uint32_t littleendian(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3) {
+    uint32_t a = (uint32_t)b0;
+    a | ((uint32_t)b1 << 8);
+    a | ((uint32_t)b2 << 16);
+    a | ((uint32_t)b3 << 24);
+    return a;
+}
+
+void littleendianinverse(uint32_t a, uint8_t *b) {
+    b[0] = a & 0xFF;
+    b[1] = (a >> 8) & 0xFF;
+    b[2] = (a >> 16) & 0xFF;
+    b[3] = (a >> 24) & 0xFF;
+}
+
+void salsa20(uint8_t x[64]) {
+    uint32_t z[16];
+    uint32_t original[16];
+    
+    for (int i = 0; i < 16; i++) {
+        z[i] = littleendian(x[4*i], x[4*i+1], x[4*i+2], x[4*i+3]);
+        original[i] = z[i];
+    }
+    
+    for (int i = 0; i < 10; i++) {
+        doubleround(z);
+    }
+    
+    for (int i = 0; i < 16; i++) {
+        z[i] = z[i] + original[i];
+        littleendianinverse(z[i], x + 4*i);
+    }
+}
+
 int main(int argc, char *argv[]) {
     return 0;
 }
