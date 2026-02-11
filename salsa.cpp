@@ -4,6 +4,8 @@
 #include <iomanip>
 #include <string>
 
+using namespace std;
+
 uint32_t rotateleft(uint32_t x, int n) {
     uint32_t y = x << n;
     y = y | (x >> (32 - n));
@@ -42,10 +44,7 @@ void doubleround(uint32_t x[16]) {
 }
 
 uint32_t littleendian(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3) {
-    uint32_t a = (uint32_t)b0;
-    a | ((uint32_t)b1 << 8);
-    a | ((uint32_t)b2 << 16);
-    a | ((uint32_t)b3 << 24);
+    uint32_t a = (uint32_t)b0 | ((uint32_t)b1 << 8) | ((uint32_t)b2 << 16) | ((uint32_t)b3 << 24);
     return a;
 }
 
@@ -65,7 +64,7 @@ void salsa20(uint8_t x[64]) {
         original[i] = z[i];
     }
     
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 4; i++) {
         doubleround(z);
     }
     
@@ -166,6 +165,102 @@ void expand64(uint8_t k[8], uint8_t n[16], uint8_t state[64]) {
         state[60 + i] = d[i];
     }
 }
+int hex_to_bytes(string hex, uint8_t *bytes) {
+    for (int i = 0; i < (int)hex.length(); i += 2) {
+        char c1 = hex[i];
+        char c2 = hex[i+1];
+        int n1, n2;
+        
+        if (c1 >= '0' && c1 <= '9') n1 = c1 - '0';
+        else if (c1 >= 'a' && c1 <= 'f') n1 = c1 - 'a' + 10;
+        else if (c1 >= 'A' && c1 <= 'F') n1 = c1 - 'A' + 10;
+        else n1 = 0;
+        
+        if (c2 >= '0' && c2 <= '9') n2 = c2 - '0';
+        else if (c2 >= 'a' && c2 <= 'f') n2 = c2 - 'a' + 10;
+        else if (c2 >= 'A' && c2 <= 'F') n2 = c2 - 'A' + 10;
+        else n2 = 0;
+        
+        bytes[i/2] = (n1 << 4) + n2;
+    }
+    return hex.length() / 2;
+}
+
+string bytes_to_hex(uint8_t *bytes, int len) {
+    string result = "";
+    for (int i = 0; i < len; i++) {
+        char b[3];
+        snprintf(b, 3, "%02x", bytes[i]);
+        result += b;
+    }
+    return result;
+}
+
+void encrypt_decrypt(int keylen, uint8_t *key, uint8_t *nonce, uint8_t *input, int inputlen, uint8_t *output) {
+    uint8_t state[64];
+    uint8_t counter[16];
+    
+    for (int i = 0; i < 8; i++) {
+        counter[i] = nonce[i];
+    }
+    
+    int num = 0;
+    int processed = 0;
+    
+    while (processed < inputlen) {
+        for (int i = 0; i < 8; i++) {
+            counter[8 + i] = (num >> (8 * i)) & 0xFF;
+        }
+        
+        if (keylen == 256) {
+            expand256(key, counter, state);
+        } else if (keylen == 128) {
+            expand128(key, counter, state);
+        } else if (keylen == 64) {
+            expand64(key, counter, state);
+        }
+        
+        salsa20(state);
+        
+        int block_bytes;
+        if ((inputlen - processed) < 64) {
+            block_bytes = inputlen - processed;
+        } else {
+            block_bytes = 64;
+        }
+        
+        for (int i = 0; i < block_bytes; i++) {
+            output[processed + i] = input[processed + i] ^ state[i];
+        }
+        
+        processed += block_bytes;
+        num++;
+    }
+}
+
 int main(int argc, char *argv[]) {
+    if (argc != 5) {
+        return 1;
+    }
+    
+    int keylen = stoi(argv[1]);
+    string key_hex = argv[2];
+    string nonce_hex = argv[3];
+    string input_hex = argv[4];
+    
+    uint8_t key[32];
+    uint8_t nonce[16];
+    uint8_t input[1024];
+    uint8_t output[1024];
+    
+    hex_to_bytes(key_hex, key);
+    hex_to_bytes(nonce_hex, nonce);
+    int inputlen = hex_to_bytes(input_hex, input);
+    
+    encrypt_decrypt(keylen, key, nonce, input, inputlen, output);
+    
+    string result = bytes_to_hex(output, inputlen);
+    cout << "\"" << result << "\"" << endl;
+    
     return 0;
 }
