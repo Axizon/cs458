@@ -3,13 +3,12 @@
 #include <cstdint>
 #include <iomanip>
 #include <string>
+#include <cstdio>
 
 using namespace std;
 
 uint32_t rotateleft(uint32_t x, int n) {
-    uint32_t y = x << n;
-    y = y | (x >> (32 - n));
-    return y;
+    return (x << n) | (x >> (32 - n));
 }
 
 void quarterround(uint32_t &y0, uint32_t &y1, uint32_t &y2, uint32_t &y3) {
